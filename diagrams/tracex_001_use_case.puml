@@ -1,0 +1,32 @@
+@startuml tracex_001_use_case
+left to right direction
+actor "Empleado" as emp
+actor "Operador" as op
+actor "Supervisor" as sup
+actor "Repartidor" as rep
+actor "Timer" as tim
+actor "Invitado" as inv
+
+emp <|-- op
+emp <|-- rep
+emp <|-- sup
+
+rectangle Tracex {
+    usecase "Solicitar Envío" as UC1
+    usecase "Registrar Evento" as UC2
+    usecase "Iniciar Sesión" as UC3
+    usecase "Cerrar Sesión" as UC4
+    usecase "Cargar Tipos de Servicio" as UC5
+    usecase "Generar Informe" as UC6
+}
+
+inv --> UC3
+op --> UC1
+op --> UC2
+rep --> UC2
+emp --> UC4
+sup --> UC5
+sup --> UC2
+tim --> UC6
+
+@enduml
