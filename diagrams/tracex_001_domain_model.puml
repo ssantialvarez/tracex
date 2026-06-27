@@ -1,0 +1,91 @@
+@startuml tracex_001_domain_model
+skinparam classAttributeIconSize 0
+
+class Cliente {
+    -Nombre
+    -Apellido
+    -DNI
+}
+
+class Remitente {
+    -Nombre
+    -Apellido
+    -DNI
+}
+
+class Destinatario {
+    -Nombre
+    -Apellido
+    -DNI
+}
+
+class Empleado {
+    -Legajo
+    -Nombre
+    -Apellido
+}
+
+class TipoDeEmpleado{
+    -Código
+    -Descripción 
+}
+
+class Pago{
+    -Código
+    -Fecha
+    -Hora
+    -Importe
+}
+
+class TipoDeServicio{
+    -Código
+    -Descripción 
+}
+
+class Envío{
+    -Código único de seguimiento
+    -Fecha
+    -Hora
+}
+
+class Paquete{
+    -Código
+    -Peso
+    -Altura
+    -Largo
+    -Ancho
+}
+
+class EstadoDeEnvío{
+    -Código
+    -Descripción 
+}
+
+class Solicitud{
+    -Código
+    -Fecha
+    -Hora
+    -Importe
+}
+
+class Ubicación{
+    -Código
+    -Descripción 
+}
+
+Envío "1" -- "1" Paquete : posee
+Envío "1" -- "1" Remitente : posee
+Envío "1" -- "1" Destinatario : posee
+Envío "1..*" -- "1" EstadoDeEnvío : posee
+Envío "1..*" -- "1" TipoDeServicio : pertenece
+Envío "1..*" -- "1" Ubicación : pertenece
+Solicitud "1" -- "1" Envío : realiza
+Solicitud "1" -- "1" Empleado : realiza
+Solicitud "1" -- "1" Cliente : realiza
+Cliente "1" -- "1" Pago : realiza
+Empleado "1..*" -- "1" TipoDeEmpleado : pertenece
+
+
+hide methods
+
+@enduml
