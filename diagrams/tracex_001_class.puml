@@ -1,0 +1,145 @@
+@startuml tracex_001_class
+
+title Diagrama de Clases - Solicitar Envío (capas GRASP)
+
+skinparam classAttributeIconSize 0
+set namespaceSeparator ::
+
+' ===================== Capa Controladores =====================
+package Controladores {
+    class ControladorSolicitud {
+        +solicitarEnvio()
+        +ingresarRemitenteDestinatario(datosRem, datosDest)
+        +ingresarDatosPaquete(peso, largo, ancho, alto, tipoServicio)
+        +seleccionarMetodoPago(metodo)
+        +finalizarSolicitud()
+    }
+}
+
+' ===================== Capa Gestores =====================
+package Gestores {
+    class GestorSolicitud {
+        -envios : Envio [*]
+        +iniciarSolicitud(idOperador)
+        +registrarRemitenteDestinatario(datosRem, datosDest)
+        +obtenerTiposDeServicioDisponibles()
+        +registrarPaquete(peso, largo, ancho, alto, tipoServicio)
+        +asignaMetodoDePago(metodoSeleccionado)
+        +finalizarSolicitud()
+        +agregarEnvio(unEnvio)
+    }
+
+    class GestorPago {
+        +procesarPago(metodoSeleccionado, importe) : codigoDePago
+    }
+}
+
+' ===================== Capa Dominio =====================
+package Dominio {
+    class Envio {
+        -Código único de seguimiento
+        -Fecha
+        -Hora
+        -Importe
+        +crearEnvio(datosRem, datosDest)
+        +agregarPaquete(peso, largo, ancho, alto)
+        +asignarTipoServicio(tipoServicio)
+        +calcularImporte()
+        +generarCodigoSeguimiento()
+    }
+
+    class Remitente {
+        -Nombre
+        -Apellido
+        -DNI
+        +crearRemitente(datosRem)
+        +validar()
+    }
+
+    class Destinatario {
+        -Nombre
+        -Apellido
+        -DNI
+        +crearDestinatario(datosDest)
+        +validar()
+    }
+
+    class Paquete {
+        -Código
+        -Peso
+        -Altura
+        -Largo
+        -Ancho
+        +crearPaquete(peso, largo, ancho, alto)
+    }
+
+    class TipoDeServicio {
+        -Código
+        -Descripción
+    }
+
+    class EstadoDeEnvio {
+        -Código
+        -Descripción
+    }
+
+    class Pago {
+        -Código
+        -Fecha
+        -Hora
+        -Importe
+    }
+
+    class Empleado {
+        -Legajo
+        -Nombre
+        -Apellido
+    }
+
+    ' Fabricación pura (GRASP: Pure Fabrication, Low Coupling, High Cohesion)
+    class CalculadoraImporte <<Fabricación Pura>> {
+        +calcularImporte(unEnvio) : importe
+    }
+}
+
+' ===================== Relaciones entre capas =====================
+ControladorSolicitud --> GestorSolicitud : delega
+GestorSolicitud --> GestorPago : delega
+
+' GRASP Creator: el Gestor crea el Envío (mantiene su colección)
+GestorSolicitud "1" o-- "*" Envio : registra >
+GestorSolicitud ..> TipoDeServicio : consulta
+
+' GRASP Creator: el GestorPago crea el Pago
+GestorPago ..> Pago : <<create>>
+
+' GRASP Creator: el Envío crea sus partes (relación "posee")
+Envio ..> Remitente : <<create>>
+Envio ..> Destinatario : <<create>>
+Envio ..> Paquete : <<create>>
+Envio ..> CalculadoraImporte : usa
+
+' ===================== Relaciones dentro de la capa Dominio =====================
+' El Envío registra todo: empleado responsable y pago
+Envio "1" -- "1" Empleado : realiza
+Envio "1" -- "1" Pago : registra
+
+Envio "1" -- "1" Paquete : posee
+Envio "1" -- "1" Remitente : posee
+Envio "1" -- "1" Destinatario : posee
+Envio "1..*" -- "1" EstadoDeEnvio : posee
+Envio "1..*" -- "1" TipoDeServicio : pertenece
+
+CalculadoraImporte ..> Envio : usa
+
+hide methods
+show ControladorSolicitud methods
+show GestorSolicitud methods
+show GestorPago methods
+show CalculadoraImporte methods
+show Envio methods
+show Remitente methods
+show Destinatario methods
+show Paquete methods
+
+@enduml

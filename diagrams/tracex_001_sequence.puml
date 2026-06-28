@@ -1,0 +1,105 @@
+@startuml tracex_001_sequence
+
+title Diagrama de Secuencia - Solicitar Envío (Flujo Normal)
+
+skinparam sequenceMessageAlign center
+
+
+participant ":ControladorSolicitud" as CTRL
+participant ":GestorSolicitud" as GEST
+participant ":GestorPago" as GESTP
+participant "E1:Envio" as ENV
+participant "R1:Remitente" as REM
+participant "D1:Destinatario" as DEST
+participant "P1:Paquete" as PAQ
+participant ":CalculadoraImporte" as CALC
+participant "PA1:Pago" as PAGO
+participant "S1:Solicitud" as SOL
+collections ": Operador" as OPCOL
+collections ": TiposDeServicio" as TDS
+collections ": MetodosDePago" as MDP
+collections ": Envio" as ENVCOL
+collections ": Remitente" as REMCOL
+collections ": Destinatario" as DESTCOL
+
+' Pasos 1-2: inicio del caso de uso (se crea el Envío a construir)
+CTRL -> GEST : iniciarSolicitud(idOperador)
+activate GEST
+GEST -> OPCOL : obtenerOperador(idOperador)
+activate OPCOL
+OPCOL --> GEST : operador
+deactivate OPCOL
+GEST --> CTRL : fecha, hora, operador.legajo, operador.nombre, operador.apellido, operador.zona
+deactivate GEST
+
+' Pasos 3-4: el Envío crea y agrega remitente y destinatario
+CTRL -> GEST : registrarRemitenteDestinatario(datosRem, datosDest)
+activate GEST
+GEST -> ENV ** : crearEnvio(datosRem, datosDest) 
+activate ENV
+ENV -> REM ** : crearRemitente(datosRem)
+activate REM
+REM -> REM : validar()
+deactivate REM
+ENV -> DEST ** : crearDestinatario(datosDest)
+activate DEST
+DEST -> DEST : validar()
+deactivate DEST
+deactivate ENV
+GEST -> TDS : obtenerTiposDeServicioDisponibles()
+activate TDS
+TDS --> GEST : tiposDeServicio
+deactivate TDS
+GEST --> CTRL : tiposDeServicio
+deactivate GEST
+
+' Pasos 5-6: el Envío crea y agrega el paquete; se calcula el importe
+CTRL -> GEST : registrarPaquete(peso, largo, ancho, alto, tipoServicio)
+activate GEST
+GEST -> ENV : agregarPaquete(peso, largo, ancho, alto)
+activate ENV
+ENV -> PAQ ** : crearPaquete(peso, largo, ancho, alto)
+GEST -> ENV : asignarTipoServicio(tipoServicio)
+GEST -> ENV : calcularImporte()
+ENV -> CALC : calcularImporte(E1)
+activate CALC
+CALC --> ENV : importe
+deactivate CALC
+ENV --> GEST : importe
+deactivate ENV
+GEST -> MDP : obtenerMetodosDePago()
+activate MDP
+MDP --> GEST : metodosDePago
+deactivate MDP
+GEST --> CTRL : importe, metodosDePago
+CTRL -> GEST : asignaMetodoDePago(metodoSeleccionado)
+GEST -> GESTP : procesarPago(metodoSeleccionado, importe)
+deactivate GEST
+
+' Pasos 7-8: selección y procesamiento del pago (CU incluido)
+activate CTRL 
+ref over CTRL, GESTP : Procesar Pago
+deactivate CTRL
+
+activate GESTP
+GESTP --> GEST : codigoDePago
+deactivate GESTP
+activate GEST
+GEST --> CTRL : codigoDePago
+deactivate GEST
+
+' Pasos 9-10: se crea el Pago y la Solicitud, y se agregan a las colecciones
+CTRL -> GEST : finalizarSolicitud()
+activate GEST
+GEST -> ENV : generarCodigoSeguimiento()
+activate ENV
+ENV --> GEST : codigoSeguimiento
+deactivate ENV
+GEST --> CTRL : codigoSeguimiento
+GEST -> REMCOL : agregarRemitente(R1)
+GEST -> DESTCOL : agregarDestinatario(D1)
+GEST -> ENVCOL : agregarEnvio(E1)
+
+deactivate GEST
+
+@enduml
