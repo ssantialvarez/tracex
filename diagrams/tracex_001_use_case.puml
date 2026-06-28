@@ -5,11 +5,12 @@ actor "Operador" as op
 actor "Supervisor" as sup
 actor "Repartidor" as rep
 actor "Timer" as tim
-actor "Invitado" as inv
+actor "Anónimo" as an
+actor "Cliente" as cli
 
 emp <|-- op
 emp <|-- rep
-emp <|-- sup
+op <|-- sup
 
 rectangle Tracex {
     usecase "Solicitar Envío" as UC1
@@ -18,15 +19,28 @@ rectangle Tracex {
     usecase "Cerrar Sesión" as UC4
     usecase "Cargar Tipos de Servicio" as UC5
     usecase "Generar Informe" as UC6
+    usecase "Procesar Pago" as UC7
+    usecase "Consultar Estado de Envío" as UC8
+    usecase "Registrar Intento Fallido" as UC9
+    usecase "Notificar por SMS" as UC10
+    usecase "Consultar Informe" as UC11
+    usecase "Cobrar con QR" as UC12
+    usecase "Cobrar con Efectivo" as UC13
+    usecase "Cobrar con Tarjeta" as UC14
 }
 
-inv --> UC3
+an --> UC3
 op --> UC1
 op --> UC2
-rep --> UC2
 emp --> UC4
+sup --> UC11
 sup --> UC5
-sup --> UC2
 tim --> UC6
-
+UC1 --> UC7 
+UC7 .|> UC12 : include
+UC7 .|> UC13 : include
+UC7 .|> UC14 : include
+cli --> UC8
+rep --> UC9
+UC9 .|> UC10 : include
 @enduml
